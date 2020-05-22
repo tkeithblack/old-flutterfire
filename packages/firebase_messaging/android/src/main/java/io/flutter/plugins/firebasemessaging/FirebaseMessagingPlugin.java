@@ -285,6 +285,10 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       Boolean isEnabled = (Boolean) call.arguments();
       FirebaseMessaging.getInstance().setAutoInitEnabled(isEnabled);
       result.success(null);
+    } else if ("registerMessageIntentListener".equals(call.method)) {
+      String intentActionString = (String) call.arguments();
+      addMessageIntentListener(intentActionString);
+      result.success(true);
     } else {
       result.notImplemented();
     }
@@ -297,6 +301,19 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       mainActivity.setIntent(intent);
     }
     return res;
+  }
+
+  // This adds listeners that wish to join the onMessageReceived onbroadcast 
+  // for push messages. This can be used when other plugins need to inspect
+  // push messages.
+  private void addMessageIntentListener(String intentActionString) {
+    // Register broadcast receiver
+    IntentFilter intentFilter = new IntentFilter();
+    intentFilter.addAction(intentActionString);
+    LocalBroadcastManager manager = LocalBroadcastManager.getInstance(applicationContext);
+    manager.registerReceiver(this, intentFilter);
+    FlutterFirebaseMessagingService.addNewIntentListener(intentActionString);
+    Log.i(TAG, "Registered Intent String: " + intentActionString);
   }
 
   /** @return true if intent contained a message to send. */

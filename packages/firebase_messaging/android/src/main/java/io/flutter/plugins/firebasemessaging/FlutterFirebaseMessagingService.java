@@ -21,6 +21,8 @@ import io.flutter.view.FlutterCallbackInformation;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.FlutterRunArguments;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -51,6 +53,8 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
   private static FlutterNativeView backgroundFlutterView;
 
   private static MethodChannel backgroundChannel;
+
+  private static List<String> externalIntentListenerStrings = new ArrayList<String>();
 
   private static Long backgroundMessageHandle;
 
@@ -85,6 +89,19 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   @Override
   public void onMessageReceived(final RemoteMessage remoteMessage) {
+
+    // If there are any external listeners for onMessageReceived
+    // send those intent broadcasts.
+    // May be used by other plugins that need to be notified of push messages.
+    if (!externalIntentListenerStrings.isEmpty()) {
+      for( String intentString : externalIntentListenerStrings ) {
+        Intent intent = new Intent(intentString);
+        intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
+        Log.i(TAG, "Broadcasted Intent String: " + intentString);
+      }
+    }
+
     // If application is running in the foreground use local broadcast to handle message.
     // Otherwise use the background isolate to handle message.
     if (isApplicationForeground(this)) {
@@ -190,6 +207,15 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
    */
   public static void setBackgroundChannel(MethodChannel channel) {
     backgroundChannel = channel;
+  }
+
+  /**
+   * Add external listeners for onMessageReceived messages. This is used so other plugins
+   * have an opporunity to respond to push notifications by regietering intent strings.
+   *
+   */
+  public static void addNewIntentListener(String intentActionString) {
+    externalIntentListenerStrings.add(intentActionString);
   }
 
   /**
