@@ -98,7 +98,6 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
         Intent intent = new Intent();
         intent.setAction(intentString);
         intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);
-//        startService(intent);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         Log.i(TAG, "Broadcasted Intent String: " + intentString);
       }
