@@ -95,8 +95,10 @@ public class FlutterFirebaseMessagingService extends FirebaseMessagingService {
     // May be used by other plugins that need to be notified of push messages.
     if (!externalIntentListenerStrings.isEmpty()) {
       for( String intentString : externalIntentListenerStrings ) {
-        Intent intent = new Intent(intentString);
+        Intent intent = new Intent();
+        intent.setAction(intentString);
         intent.putExtra(EXTRA_REMOTE_MESSAGE, remoteMessage);
+//        startService(intent);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
         Log.i(TAG, "Broadcasted Intent String: " + intentString);
       }
