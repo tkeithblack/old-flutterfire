@@ -181,6 +181,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
       FlutterFirebaseMessagingService.onInitialized();
       result.success(true);
     } else if ("configure".equals(call.method)) {
+      Log.d(TAG, "onNewIntent()");
       FirebaseInstanceId.getInstance()
           .getInstanceId()
           .addOnCompleteListener(
@@ -195,6 +196,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
                 }
               });
       if (mainActivity != null) {
+        Log.d(TAG, "onMethodCall.configure, calling sendMessageFromIntent()");
         sendMessageFromIntent("onLaunch", mainActivity.getIntent());
       }
       result.success(null);
@@ -296,6 +298,7 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
   @Override
   public boolean onNewIntent(Intent intent) {
+    Log.d(TAG, "onNewIntent()");
     boolean res = sendMessageFromIntent("onResume", intent);
     if (res && mainActivity != null) {
       mainActivity.setIntent(intent);
@@ -318,6 +321,11 @@ public class FirebaseMessagingPlugin extends BroadcastReceiver
 
   /** @return true if intent contained a message to send. */
   private boolean sendMessageFromIntent(String method, Intent intent) {
+    Log.d(TAG, "sendMessageFromIntent(method:" + method + ", intent" + intent + ")");
+
+    Bundle ext = intent.getExtras();
+    Log.d(TAG, "extras: " + ext);
+
     if (CLICK_ACTION_VALUE.equals(intent.getAction())
         || CLICK_ACTION_VALUE.equals(intent.getStringExtra("click_action"))) {
       Map<String, Object> message = new HashMap<>();
